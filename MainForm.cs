@@ -21,7 +21,9 @@ namespace DesktopPictureFrame
       NONE,
       SCROLL_LEFT,
       SCROLL_RIGHT,
-      TOGGLE_WINDOW_BORDER
+      TOGGLE_WINDOW_BORDER,
+      MAXIMISE_WINDOW,
+      RESTORE_WINDOW
     }
 
     MouseClickMode ClickMode = MouseClickMode.NONE;
@@ -387,16 +389,35 @@ namespace DesktopPictureFrame
       try
       {
         int leftThresholdX = (int)( Width * 0.33 );
-        int rightThresholdX = (int)( Width - leftThresholdX );
+        int rightThresholdX = ( Width - leftThresholdX );
+        int topThreshold = (int)( Height * 0.2 );
+        int bottomThreshold = ( Height - topThreshold );
 
-        if( e.X < leftThresholdX )
+        // Top left.
+        if( WindowState != FormWindowState.Maximized &&
+            e.X < leftThresholdX &&
+            e.Y < topThreshold )
+        {
+          ApplyMaximiseWindowMode();
+        }
+        // Bottom right.
+        else if( WindowState != FormWindowState.Normal &&
+                 e.X > rightThresholdX &&
+                 e.Y > bottomThreshold )
+        {
+          ApplyRestoreWindowMode();
+        }
+        // Left.
+        else if( e.X < leftThresholdX )
         {
           ApplyScrollLeftMode();        
         }
+        // Right.
         else if( e.X > rightThresholdX )
         {
           ApplyScrollRightMode();
         }
+        // Centre.
         else
         {
           ApplyToggleWindowBorderMode();
@@ -406,6 +427,22 @@ namespace DesktopPictureFrame
       {
         Log( ex );
       }
+    }
+
+    //-------------------------------------------------------------------------
+
+    void ApplyMaximiseWindowMode()
+    {
+      ClickMode = MouseClickMode.MAXIMISE_WINDOW;
+      Cursor = Cursors.PanNW;
+    }
+
+    //-------------------------------------------------------------------------
+
+    void ApplyRestoreWindowMode()
+    {
+      ClickMode = MouseClickMode.RESTORE_WINDOW;
+      Cursor = Cursors.PanSE;
     }
 
     //-------------------------------------------------------------------------
@@ -460,6 +497,18 @@ namespace DesktopPictureFrame
             {
               HandleClick_ToggleWindowBorder();
             }
+            break;
+
+          case MouseClickMode.MAXIMISE_WINDOW:
+            WindowState = FormWindowState.Maximized;
+            break;
+
+          case MouseClickMode.RESTORE_WINDOW:
+            WindowState = FormWindowState.Normal;
+            break;
+
+          default:
+            Log( "Unknown mode when clicked." );
             break;
         }
       }
