@@ -5,6 +5,8 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Xml;
 using System.Threading;
+using System.ComponentModel;
+using System.Drawing;
 
 namespace DesktopPictureFrame
 {
@@ -12,7 +14,7 @@ namespace DesktopPictureFrame
   {
     //-------------------------------------------------------------------------
 
-    const int REFRESH_RATE_MINS = 10;
+    const int DEFAULT_REFRESH_RATE_MINS = 10;
     const string SETTINGS_FILENAME = "settings.xml";
     const string LOG_FILENAME = "log.txt";
 
@@ -33,6 +35,7 @@ namespace DesktopPictureFrame
     int ActiveImageIndex;
     Thread RefreshRunner;
     bool RefreshRunnerIsAlive;
+    int RefreshRateInSecs = DEFAULT_REFRESH_RATE_MINS * 60;
 
     //-------------------------------------------------------------------------
 
@@ -65,7 +68,7 @@ namespace DesktopPictureFrame
 
     //-------------------------------------------------------------------------
 
-    private void MainForm_Load( object sender, EventArgs e )
+    void MainForm_Load( object sender, EventArgs e )
     {
       try
       {
@@ -83,7 +86,7 @@ namespace DesktopPictureFrame
 
     //-------------------------------------------------------------------------
 
-    private void MainForm_FormClosing( object sender, FormClosingEventArgs e )
+    void MainForm_FormClosing( object sender, FormClosingEventArgs e )
     {
       try
       {
@@ -159,6 +162,7 @@ namespace DesktopPictureFrame
         {
           LoadImageLocationsFromXml( settingsXml );
           LoadWindowLocationFromXml( settingsXml );
+          LoadRefreshRateFromXml( settingsXml );
         }
       }
       catch( Exception ex )
@@ -228,9 +232,29 @@ namespace DesktopPictureFrame
           int.Parse(
             ( windowXml.SelectSingleNode( "Height" ) as XmlElement ).InnerText );
 
-        Location = new System.Drawing.Point( x, y );
+        Location = new Point( x, y );
 
         HandleClick_ToggleWindowBorder();
+      }
+      catch( Exception ex )
+      {
+        Log( ex );
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    void LoadRefreshRateFromXml( XmlElement settingsXml )
+    {
+      try
+      {
+        XmlElement refreshRateXml =
+          settingsXml.SelectSingleNode( "RefreshRateInMinutes" ) as XmlElement;
+
+        if( refreshRateXml != null )
+        {
+          RefreshRateInSecs = int.Parse( refreshRateXml.InnerText ) * 60;
+        }
       }
       catch( Exception ex )
       {
@@ -251,6 +275,7 @@ namespace DesktopPictureFrame
 
         SaveImageLocationsToXml( settingsXml );
         SaveWindowLocationToXml( settingsXml );
+        SaveRefreshRateToXml( settingsXml );
 
         xmlDoc.Save( AppPath + SETTINGS_FILENAME );
       }
@@ -315,6 +340,25 @@ namespace DesktopPictureFrame
         XmlElement hXml = settingsXml.OwnerDocument.CreateElement( "Height" );
         windowXml.AppendChild( hXml );
         hXml.InnerText = Height.ToString();
+      }
+      catch( Exception ex )
+      {
+        Log( ex );
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    void SaveRefreshRateToXml( XmlElement settingsXml )
+    {
+      try
+      {
+        XmlElement refreshRateXml =
+          settingsXml.OwnerDocument.CreateElement( "RefreshRateInMinutes" );
+        
+        settingsXml.AppendChild( refreshRateXml );
+        
+        refreshRateXml.InnerText = ( RefreshRateInSecs / 60 ).ToString();
       }
       catch( Exception ex )
       {
@@ -629,7 +673,6 @@ namespace DesktopPictureFrame
         Cursor = Cursors.WaitCursor;
 
         uiImage.Load();
-        //uiImage.Refresh();
 
         Cursor = Cursors.Default;
       }
@@ -654,9 +697,7 @@ namespace DesktopPictureFrame
         {
           try
           {
-            const int numberOfSecsPerRefresh = REFRESH_RATE_MINS * 60;
-
-            for( int i = 0; i < numberOfSecsPerRefresh; i++ )
+            for( int i = 0; i < RefreshRateInSecs; i++ )
             {
               Thread.Sleep( 1000 );
 
@@ -672,6 +713,33 @@ namespace DesktopPictureFrame
           }
 
           Invoke( refreshDelegate );
+        }
+      }
+      catch( Exception ex )
+      {
+        Log( ex );
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    void uiImage_LoadCompleted( object sender,
+                                AsyncCompletedEventArgs e )
+    {
+      try
+      {
+        if( e.Error != null )
+        {
+          Log(
+            string.Format( 
+              "Error loading image: {0}",
+              e.Error.Message ) );
+
+          uiImage.BackColor = Color.Black;
+        }
+        else
+        {
+          uiImage.BackColor = Color.Fuchsia;
         }
       }
       catch( Exception ex )

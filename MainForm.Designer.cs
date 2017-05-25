@@ -43,6 +43,7 @@
       this.uiImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
       this.uiImage.TabIndex = 0;
       this.uiImage.TabStop = false;
+      this.uiImage.LoadCompleted += new System.ComponentModel.AsyncCompletedEventHandler(this.uiImage_LoadCompleted);
       this.uiImage.Click += new System.EventHandler(this.uiImage_Click);
       this.uiImage.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
       // 
