@@ -735,7 +735,7 @@ namespace DesktopPictureFrame
               "Error loading image: {0}",
               e.Error.Message ) );
 
-          uiImage.BackColor = Color.Black;
+          uiImage.BackColor = Color.White;
         }
         else
         {
