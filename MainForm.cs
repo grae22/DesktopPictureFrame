@@ -74,6 +74,7 @@ namespace DesktopPictureFrame
       {
         InitialiseLog();
         LoadSettings();
+        InitialiseSystemTrayIcon();
         InitialiseRefreshThread();
 
         SwitchImage( 0 );
@@ -91,6 +92,7 @@ namespace DesktopPictureFrame
       try
       {
         SaveSettings();
+        ShutdownSystemTrayIcon();
         ShutdownRefreshThread();
         ShutdownLog();
       }
@@ -368,6 +370,23 @@ namespace DesktopPictureFrame
 
     //-------------------------------------------------------------------------
 
+    void InitialiseSystemTrayIcon()
+    {
+      try
+      {
+        uiSystemTrayIcon.Text = "Desktop Picture Frame";
+        uiSystemTrayIcon.Icon = Properties.Resources.SystemTray;
+        uiSystemTrayIcon.Visible = true;
+        uiSystemTrayIcon.Click += OnSystemTrayIconClick;
+      }
+      catch( Exception ex )
+      {
+        Log( ex );
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
     void InitialiseRefreshThread()
     {
       try
@@ -375,6 +394,20 @@ namespace DesktopPictureFrame
         var threadStart = new ThreadStart( RunRefresh );
         RefreshRunner = new Thread( threadStart );
         RefreshRunner.Start();
+      }
+      catch( Exception ex )
+      {
+        Log( ex );
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    void ShutdownSystemTrayIcon()
+    {
+      try
+      {
+        uiSystemTrayIcon.Visible = false;
       }
       catch( Exception ex )
       {
@@ -741,6 +774,21 @@ namespace DesktopPictureFrame
         {
           uiImage.BackColor = Color.Fuchsia;
         }
+      }
+      catch( Exception ex )
+      {
+        Log( ex );
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    void OnSystemTrayIconClick( object source, EventArgs args )
+    {
+      try
+      {
+        WindowState = FormWindowState.Minimized;
+        WindowState = FormWindowState.Normal;
       }
       catch( Exception ex )
       {

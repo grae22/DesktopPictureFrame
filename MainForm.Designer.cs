@@ -28,8 +28,10 @@
     /// </summary>
     private void InitializeComponent()
     {
+      this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
       this.uiImage = new System.Windows.Forms.PictureBox();
+      this.uiSystemTrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
       ((System.ComponentModel.ISupportInitialize)(this.uiImage)).BeginInit();
       this.SuspendLayout();
       // 
@@ -46,6 +48,11 @@
       this.uiImage.LoadCompleted += new System.ComponentModel.AsyncCompletedEventHandler(this.uiImage_LoadCompleted);
       this.uiImage.Click += new System.EventHandler(this.uiImage_Click);
       this.uiImage.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
+      // 
+      // uiSystemTrayIcon
+      // 
+      this.uiSystemTrayIcon.Text = "notifyIcon";
+      this.uiSystemTrayIcon.Visible = true;
       // 
       // MainForm
       // 
@@ -69,6 +76,7 @@
     #endregion
 
     private System.Windows.Forms.PictureBox uiImage;
+    private System.Windows.Forms.NotifyIcon uiSystemTrayIcon;
   }
 }
 
